@@ -19,6 +19,7 @@ class InMemoryItemStorageTest {
     public void newStorage() {
         itemStorage = new InMemoryItemStorage();
     }
+
     @Test
     void testGetItemsList() {
         itemStorage.createItem(item1);
