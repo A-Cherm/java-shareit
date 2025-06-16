@@ -1,18 +1,17 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Set;
 
 /**
  * TODO Sprint add-controllers.
  */
 @Data
 @AllArgsConstructor
-public class User {
+public class Item {
     private Long id;
+    private Long userId;
     private String name;
-    private String email;
-    private Set<Long> itemIds;
+    private String description;
+    private boolean available;
 }
