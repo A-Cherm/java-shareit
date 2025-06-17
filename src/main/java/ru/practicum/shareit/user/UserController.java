@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -11,31 +12,41 @@ import ru.practicum.shareit.user.dto.UserUpdateDto;
  * TODO Sprint add-controllers.
  */
 @RestController
-@RequiredArgsConstructor
+@Slf4j
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @RequestMapping(path = "/users")
 public class UserController {
-    @Autowired
     private final UserService userService;
 
     @GetMapping("/{id}")
     public UserDto getUser(@PathVariable long id) {
-        return userService.getUser(id);
+        UserDto userDto = userService.getUser(id);
+
+        log.info("Возвращается пользователь {}", userDto);
+        return userDto;
     }
 
     @PostMapping
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
-        return userService.createUser(userDto);
+        UserDto user = userService.createUser(userDto);
+
+        log.info("Создан пользователь {}", user);
+        return user;
     }
 
     @PatchMapping("/{id}")
     public UserDto updateUser(@Valid @RequestBody UserUpdateDto userDto,
                               @PathVariable long id) {
         userDto.setId(id);
-        return userService.updateUser(userDto);
+        UserDto user = userService.updateUser(userDto);
+
+        log.info("Обновлён пользователь {}", user);
+        return user;
     }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable long id) {
         userService.deleteUser(id);
+        log.info("Удалён пользователь с id = {}", id);
     }
 }

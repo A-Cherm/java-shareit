@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
 
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Slf4j
 @Component
 public class InMemoryItemStorage implements ItemStorage {
     private final Map<Long, Item> items = new HashMap<>();
@@ -48,9 +46,6 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public List<Item> searchItems(String searchQuery) {
-        if (searchQuery.isBlank()) {
-            return List.of();
-        }
         String lowerCase = searchQuery.toLowerCase();
 
         return items.values()

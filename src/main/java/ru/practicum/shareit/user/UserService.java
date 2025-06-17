@@ -10,43 +10,38 @@ import ru.practicum.shareit.user.dto.UserUpdateDto;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserService {
-    @Autowired
     private final UserStorage userStorage;
-    @Autowired
     private final ItemStorage itemStorage;
 
     public UserDto getUser(long id) {
         User user = userStorage.getUser(id);
 
-        log.info("Возвращается пользователь {}", user);
         return UserMapper.mapToUserDto(user);
     }
 
     public UserDto createUser(UserDto userDto) {
         User user = userStorage.createUser(UserMapper.mapToUser(userDto));
 
-        log.info("Создан пользователь {}", user);
         return UserMapper.mapToUserDto((user));
     }
 
     public UserDto updateUser(UserUpdateDto userDto) {
-        userStorage.validateId(userDto.getId());
-
         User oldUser = userStorage.getUser(userDto.getId());
 
+        log.debug("Исходные данные пользователя: {}", oldUser);
         if (userDto.getName() != null) {
             oldUser.setName(userDto.getName());
         }
-        if (userDto.getEmail() != null) {
+        if (userDto.getEmail() != null && !userDto.getEmail().equals(oldUser.getEmail())) {
             userStorage.validateEmail(userDto.getEmail());
             oldUser.setEmail(userDto.getEmail());
         }
+        log.debug("Обновлённые данные пользователя: {}", oldUser);
 
         oldUser = userStorage.updateUser(oldUser);
 
-        log.info("Обновлён пользователь {}", oldUser);
         return UserMapper.mapToUserDto(oldUser);
     }
 
@@ -55,6 +50,5 @@ public class UserService {
 
         user.getItemIds().forEach(itemStorage::deleteItem);
         userStorage.deleteUser(id);
-        log.info("Удалён пользователь {}", user);
     }
 }

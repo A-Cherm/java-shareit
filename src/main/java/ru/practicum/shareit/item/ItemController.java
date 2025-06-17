@@ -16,26 +16,34 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/items")
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemController {
-    @Autowired
     private final ItemService itemService;
 
     @GetMapping
     public List<ItemDto> getUserItems(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.getUserItems(userId);
+        List<ItemDto> userItems = itemService.getUserItems(userId);
+
+        log.info("Список вещей пользователя с id = {}: {}", userId, userItems);
+        return userItems;
     }
 
     @GetMapping("/{itemId}")
     public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") long userId,
                            @PathVariable long itemId) {
-        return itemService.getItem(userId, itemId);
+        ItemDto itemDto = itemService.getItem(userId, itemId);
+
+        log.info("Возвращается вещь {}", itemDto);
+        return itemDto;
     }
 
     @PostMapping
     public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") long userId,
                               @Valid @RequestBody ItemDto itemDto) {
-        return itemService.createItem(userId, itemDto);
+        ItemDto item = itemService.createItem(userId, itemDto);
+
+        log.info("Создана вещь {}", item);
+        return item;
     }
 
     @PatchMapping("/{itemId}")
@@ -43,13 +51,18 @@ public class ItemController {
                               @PathVariable long itemId,
                               @Valid @RequestBody ItemUpdateDto itemDto) {
         itemDto.setId(itemId);
-        return itemService.updateItem(userId, itemDto);
+        ItemDto item = itemService.updateItem(userId, itemDto);
+
+        log.info("Обновлена вещь {}", item);
+        return item;
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestHeader("X-Sharer-User-Id") long userId,
                                      @RequestParam(name = "text") String searchQuery) {
-        log.info("{}", searchQuery);
-        return itemService.searchItems(userId, searchQuery);
+        List<ItemDto> searchResult = itemService.searchItems(userId, searchQuery);
+
+        log.info("Результат поиска по запросу {}: {}", searchQuery, searchResult);
+        return searchResult;
     }
 }

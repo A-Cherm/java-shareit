@@ -14,11 +14,9 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemServiceImpl implements ItemService {
-    @Autowired
     private final ItemStorage itemStorage;
-    @Autowired
     private final UserStorage userStorage;
 
     @Override
@@ -26,7 +24,6 @@ public class ItemServiceImpl implements ItemService {
         User user = userStorage.getUser(userId);
         List<Item> userItems = itemStorage.getItemsList(user.getItemIds());
 
-        log.info("Список вещей пользователя: {}", userItems);
         return userItems
                 .stream()
                 .map(ItemMapper::mapToItemDto)
@@ -37,7 +34,6 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getItem(long userId, long id) {
         Item item = itemStorage.getItem(id);
 
-        log.info("Возвращается вещь {}", item);
         return ItemMapper.mapToItemDto(item);
     }
 
@@ -48,17 +44,16 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemStorage.createItem(ItemMapper.mapToItem(itemDto, userId));
 
         userStorage.addItem(item.getUserId(), item.getId());
-        log.info("Создана вещь {}", item);
         return ItemMapper.mapToItemDto(item);
     }
 
     @Override
     public ItemDto updateItem(long userId, ItemUpdateDto itemDto) {
-        itemStorage.validateId(itemDto.getId());
         userStorage.validateId(userId);
 
         Item oldItem = itemStorage.getItem(itemDto.getId());
 
+        log.debug("Исходные данные вещи: {}", oldItem);
         if (oldItem.getUserId() != userId) {
             throw new ValidationException("Неверный id владельца вещи");
         }
@@ -71,18 +66,20 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             oldItem.setAvailable(itemDto.getAvailable());
         }
+        log.debug("Обновлённые данные вещи: {}", oldItem);
 
         oldItem = itemStorage.updateItem(oldItem);
 
-        log.info("Обновлена вещь {}", oldItem);
         return ItemMapper.mapToItemDto(oldItem);
     }
 
     @Override
     public List<ItemDto> searchItems(long userId, String searchQuery) {
+        if (searchQuery == null || searchQuery.isBlank()) {
+            return List.of();
+        }
         List<Item> searchResult = itemStorage.searchItems(searchQuery);
 
-        log.info("Результат поиска по запросу {}: {}", searchQuery, searchResult);
         return searchResult
                 .stream()
                 .map(ItemMapper::mapToItemDto)
