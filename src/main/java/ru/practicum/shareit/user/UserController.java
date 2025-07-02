@@ -1,22 +1,23 @@
 package ru.practicum.shareit.user;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @RequestMapping(path = "/users")
 public class UserController {
     private final UserService userService;
+
+    @Autowired
+    public UserController(@Qualifier("userDbService") UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/{id}")
     public UserDto getUser(@PathVariable long id) {

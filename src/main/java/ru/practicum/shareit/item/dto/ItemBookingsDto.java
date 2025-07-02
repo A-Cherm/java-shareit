@@ -5,11 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ItemDto {
+public class ItemBookingsDto {
     private Long id;
     @NotBlank
     private String name;
@@ -18,4 +19,6 @@ public class ItemDto {
     @NotNull
     private Boolean available;
     private List<CommentDto> comments;
+    private LocalDateTime lastBooking;
+    private LocalDateTime nextBooking;
 }

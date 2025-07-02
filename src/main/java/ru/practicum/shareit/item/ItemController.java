@@ -1,37 +1,40 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @Slf4j
 @RequestMapping("/items")
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemController {
     private final ItemService itemService;
 
+    @Autowired
+    public ItemController(@Qualifier("itemDbService") ItemService itemService) {
+        this.itemService = itemService;
+    }
+
     @GetMapping
-    public List<ItemDto> getUserItems(@RequestHeader("X-Sharer-User-Id") long userId) {
-        List<ItemDto> userItems = itemService.getUserItems(userId);
+    public List<ItemBookingsDto> getUserItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+        List<ItemBookingsDto> userItems = itemService.getUserItems(userId);
 
         log.info("Список вещей пользователя с id = {}: {}", userId, userItems);
         return userItems;
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") long userId,
+    public ItemBookingsDto getItem(@RequestHeader("X-Sharer-User-Id") long userId,
                            @PathVariable long itemId) {
-        ItemDto itemDto = itemService.getItem(userId, itemId);
+        ItemBookingsDto itemDto = itemService.getItem(userId, itemId);
 
         log.info("Возвращается вещь {}", itemDto);
         return itemDto;
@@ -64,5 +67,15 @@ public class ItemController {
 
         log.info("Результат поиска по запросу {}: {}", searchQuery, searchResult);
         return searchResult;
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") long userId,
+                                 @PathVariable long itemId,
+                                 @RequestBody CommentDto commentDto) {
+        CommentDto comment = itemService.addComment(userId, itemId, commentDto);
+
+        log.info("Добавлен комментарий {}", comment);
+        return comment;
     }
 }
