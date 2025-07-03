@@ -53,7 +53,7 @@ class BookingDbServiceTest {
                 now.minusMonths(1), now.plusDays(1));
 
         BookingDto createdBooking = bookingService.createBooking(user2.getId(), booking1);
-        BookingDto returnedBooking = bookingService.getBooking(createdBooking.getId());
+        BookingDto returnedBooking = bookingService.getBooking(user2.getId(), createdBooking.getId());
 
         assertNotNull(returnedBooking, "Бронирование не возвращается");
         assertEquals(now.minusMonths(1), returnedBooking.getStart(), "Неверная дата бронирования");

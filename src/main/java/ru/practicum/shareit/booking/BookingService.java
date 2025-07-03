@@ -7,7 +7,7 @@ import ru.practicum.shareit.booking.dto.BookingState;
 import java.util.List;
 
 public interface BookingService {
-    BookingDto getBooking(long bookingId);
+    BookingDto getBooking(long userId, long bookingId);
 
     BookingDto createBooking(long userId, BookingCreateDto bookingDto);
 
@@ -16,4 +16,6 @@ public interface BookingService {
     List<BookingDto> getUserBookings(long userId, BookingState state);
 
     List<BookingDto> getBookingsForUserItems(long userId, BookingState state);
+
+    Booking validateBookingId(long id);
 }

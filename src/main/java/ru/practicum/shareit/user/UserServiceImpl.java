@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void validateUserId(long id) {
-        userStorage.validateId(id);
+    public User validateUserId(long id) {
+        return userStorage.getUser(id);
     }
 }

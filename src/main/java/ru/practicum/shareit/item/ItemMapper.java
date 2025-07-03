@@ -57,7 +57,7 @@ public class ItemMapper {
                 item,
                 user,
                 commentDto.getText(),
-                null
+                LocalDateTime.now()
         );
     }
 }

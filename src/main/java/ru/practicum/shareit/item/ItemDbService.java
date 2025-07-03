@@ -16,9 +16,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
-import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,27 +28,25 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class ItemDbService implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
-    private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final UserService userService;
 
     @Autowired
-    public ItemDbService(ItemRepository itemRepository, UserRepository userRepository,
-                         @Qualifier("userDbService") UserService userService,
-                         BookingRepository bookingRepository,
-                         CommentRepository commentRepository) {
+    public ItemDbService(ItemRepository itemRepository, BookingRepository bookingRepository,
+                         CommentRepository commentRepository,
+                         @Qualifier("userDbService") UserService userService) {
         this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-        this.userService = userService;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.userService = userService;
     }
 
     @Override
     public List<ItemBookingsDto> getUserItems(long userId) {
         userService.validateUserId(userId);
-        List<Booking> itemsBookings = bookingRepository.findAllByItemUserIdOrderByStartDesc(userId);
+        List<Booking> itemsBookings = bookingRepository
+                .findAllByItemUserIdAndStatusOrderByStartDesc(userId, BookingStatus.APPROVED);
         List<Item> userItems = itemRepository.findAllByUserId(userId);
         LocalDateTime now = LocalDateTime.now();
         Map<Long, LocalDateTime> lastBookingDates = new HashMap<>();
@@ -66,10 +64,17 @@ public class ItemDbService implements ItemService {
                 nextBookingDates.put(booking.getItem().getId(), booking.getStart());
             }
         }
+        List<Comment> comments = commentRepository.findAllByItemUserId(userId);
+        Map<Long, List<Comment>> itemsComments = new HashMap<>();
+        userItems.forEach(item -> itemsComments.put(item.getId(), new ArrayList<>()));
+
+        for (Comment comment : comments) {
+            itemsComments.get(comment.getItem().getId()).add(comment);
+        }
         return userItems
                 .stream()
                 .map(item -> ItemMapper.mapToItemBookingsDto(item,
-                        commentRepository.findAllByItemId(item.getId()),
+                        itemsComments.get(item.getId()),
                         lastBookingDates.get(item.getId()),
                         nextBookingDates.get(item.getId())))
                 .toList();
@@ -78,8 +83,7 @@ public class ItemDbService implements ItemService {
     @Override
     public ItemBookingsDto getItem(long userId, long id) {
         userService.validateUserId(userId);
-        Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Нет предмета с id = " + id));
+        Item item = validateItemId(id);
         List<Comment> comments = commentRepository.findAllByItemId(id);
         List<Booking> bookings = bookingRepository.findAllByItemId(id);
         LocalDateTime last = null;
@@ -101,8 +105,7 @@ public class ItemDbService implements ItemService {
     @Override
     @Transactional
     public ItemDto createItem(long userId, ItemDto itemDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Нет пользователя с id = " + userId));
+        User user = userService.validateUserId(userId);
         Item item = itemRepository.save(ItemMapper.mapToItem(itemDto, user));
 
         return ItemMapper.mapToItemDto(item, List.of());
@@ -112,8 +115,7 @@ public class ItemDbService implements ItemService {
     @Transactional
     public ItemDto updateItem(long userId, ItemUpdateDto itemDto) {
         userService.validateUserId(userId);
-        Item oldItem = itemRepository.findById(itemDto.getId())
-                .orElseThrow(() -> new NotFoundException("Нет предмета с id = " + itemDto.getId()));
+        Item oldItem = validateItemId(itemDto.getId());
 
         log.debug("Исходные данные вещи: {}", oldItem);
         if (oldItem.getUser().getId() != userId) {
@@ -149,10 +151,8 @@ public class ItemDbService implements ItemService {
     @Override
     @Transactional
     public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Нет пользователя с id = " + userId));
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Нет предмета с id = " + itemId));
+        User user = userService.validateUserId(userId);
+        Item item = validateItemId(itemId);
 
         if (!bookingRepository.existsByUserIdAndItemIdAndStatusAndEndBefore(userId, itemId,
                 BookingStatus.APPROVED, LocalDateTime.now())) {
@@ -160,9 +160,13 @@ public class ItemDbService implements ItemService {
         }
         Comment comment = ItemMapper.mapToComment(commentDto, user, item);
 
-        comment.setCreated(LocalDateTime.now());
-
         commentRepository.save(comment);
         return ItemMapper.mapToCommentDto(comment);
+    }
+
+    @Override
+    public Item validateItemId(long id) {
+        return itemRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Нет предмета с id = " + id));
     }
 }

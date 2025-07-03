@@ -21,8 +21,9 @@ public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping("/{bookingId}")
-    public BookingDto getBooking(@PathVariable long bookingId) {
-        BookingDto booking = bookingService.getBooking(bookingId);
+    public BookingDto getBooking(@RequestHeader("X-Sharer-User-Id") long userId,
+                                 @PathVariable long bookingId) {
+        BookingDto booking = bookingService.getBooking(userId, bookingId);
 
         log.info("Возвращается бронирование {}", booking);
         return booking;

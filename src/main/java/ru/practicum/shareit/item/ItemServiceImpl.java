@@ -89,4 +89,9 @@ public class ItemServiceImpl implements ItemService {
     public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
         return null;
     }
+
+    @Override
+    public Item validateItemId(long id) {
+        return itemStorage.getItem(id);
+    }
 }

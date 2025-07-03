@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -9,9 +10,9 @@ import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,33 +21,35 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class BookingDbService implements BookingService {
     private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
+    private final UserService userService;
+    private final ItemService itemService;
 
     @Autowired
     public BookingDbService(BookingRepository bookingRepository,
-                            UserRepository userRepository,
-                            ItemRepository itemRepository) {
+                            @Qualifier("userDbService") UserService userService,
+                            @Qualifier("itemDbService") ItemService itemService) {
         this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
+        this.userService = userService;
+        this.itemService = itemService;
     }
 
     @Override
-    public BookingDto getBooking(long bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException("Нет бронирования с id = " + bookingId));
+    public BookingDto getBooking(long userId, long bookingId) {
+        Booking booking = validateBookingId(bookingId);
 
+        if ((userId != booking.getUser().getId()) &&
+                (userId != booking.getItem().getUser().getId())) {
+            throw new ValidationException("Данные бронирования доступны только автору или владельцу вещи");
+        }
         return BookingMapper.mapToBookingDto(booking);
     }
 
     @Override
     @Transactional
     public BookingDto createBooking(long userId, BookingCreateDto bookingDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Нет пользователя с id = " + userId));
-        Item item = itemRepository.findById(bookingDto.getItemId())
-                .orElseThrow(() -> new NotFoundException("Нет вещи с id = " + bookingDto.getItemId()));
+        validateTimeframe(bookingDto.getStart(), bookingDto.getEnd());
+        User user = userService.validateUserId(userId);
+        Item item = itemService.validateItemId(bookingDto.getItemId());
 
         if (!item.isAvailable()) {
             throw new ValidationException("Вещь с id = " + item.getId() + " не доступна");
@@ -59,11 +62,13 @@ public class BookingDbService implements BookingService {
     @Override
     @Transactional
     public BookingDto updateBooking(long userId, long bookingId, boolean approved) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException("Нет бронирования с id = " + bookingId));
+        Booking booking = validateBookingId(bookingId);
 
         if (booking.getItem().getUser().getId() != userId) {
             throw new ValidationException("Статус может менять только владелец вещи");
+        }
+        if (!booking.getStatus().equals(BookingStatus.WAITING)) {
+            throw new ValidationException("Нельзя менять статус рассмотренных заявок");
         }
         if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
@@ -76,9 +81,7 @@ public class BookingDbService implements BookingService {
 
     @Override
     public List<BookingDto> getUserBookings(long userId, BookingState state) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Нет пользователя с id = " + userId);
-        }
+        userService.validateUserId(userId);
         List<Booking> userBookings;
 
         userBookings = switch (state) {
@@ -102,9 +105,7 @@ public class BookingDbService implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsForUserItems(long userId, BookingState state) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Нет пользователя с id = " + userId);
-        }
+        userService.validateUserId(userId);
         List<Booking> userBookings;
 
         userBookings = switch (state) {
@@ -124,5 +125,17 @@ public class BookingDbService implements BookingService {
                 .stream()
                 .map(BookingMapper::mapToBookingDto)
                 .toList();
+    }
+
+    @Override
+    public Booking validateBookingId(long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Нет бронирования с id = " + id));
+    }
+
+    private void validateTimeframe(LocalDateTime start, LocalDateTime end) {
+        if (start.isAfter(end) || start.equals(end)) {
+            throw new ValidationException("Некорректный интервал бронирования");
+        }
     }
 }

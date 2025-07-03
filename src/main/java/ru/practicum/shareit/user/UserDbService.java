@@ -19,8 +19,7 @@ public class UserDbService implements UserService {
 
     @Override
     public UserDto getUser(long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Нет пользователя с id = " + id));
+        User user = validateUserId(id);
 
         return UserMapper.mapToUserDto(user);
     }
@@ -37,8 +36,7 @@ public class UserDbService implements UserService {
     @Override
     @Transactional
     public UserDto updateUser(UserUpdateDto userDto) {
-        User oldUser = userRepository.findById(userDto.getId())
-                .orElseThrow(() -> new NotFoundException("Нет пользователя с id = " + userDto.getId()));
+        User oldUser = validateUserId(userDto.getId());
 
         log.debug("Исходные данные пользователя: {}", oldUser);
         if (userDto.getName() != null) {
@@ -62,10 +60,9 @@ public class UserDbService implements UserService {
     }
 
     @Override
-    public void validateUserId(long id) {
-        if (!userRepository.existsById(id)) {
-            throw new NotFoundException("Нет пользователя с id = " + id);
-        }
+    public User validateUserId(long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Нет пользователя с id = " + id));
     }
 
     private void validateEmail(String email) {
