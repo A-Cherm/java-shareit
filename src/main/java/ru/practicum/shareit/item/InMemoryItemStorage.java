@@ -3,48 +3,46 @@ package ru.practicum.shareit.item;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Component
-public class InMemoryItemStorage implements ItemStorage {
+public class InMemoryItemStorage {
     private final Map<Long, Item> items = new HashMap<>();
 
-    @Override
-    public List<Item> getItemsList(Set<Long> itemsIds) {
-        return itemsIds
+    public List<Item> getUserItems(Long userId) {
+        return items.values()
                 .stream()
-                .map(items::get)
+                .filter(item -> Objects.equals(item.getUser().getId(), userId))
                 .toList();
     }
 
-    @Override
     public Item getItem(long id) {
         validateId(id);
         return items.get(id);
     }
 
-    @Override
     public Item createItem(Item item) {
         item.setId(getNextId());
         items.put(item.getId(), item);
         return item;
     }
 
-    @Override
     public Item updateItem(Item item) {
         items.put(item.getId(), item);
         return item;
     }
 
-    @Override
     public void deleteItem(long id) {
         items.remove(id);
     }
 
-    @Override
+    public void deleteUserItems(long userId) {
+        items.keySet()
+                .stream()
+                .filter(id -> items.get(id).getUser().getId().equals(userId))
+                .forEach(items::remove);
+    }
+
     public List<Item> searchItems(String searchQuery) {
         String lowerCase = searchQuery.toLowerCase();
 
@@ -56,7 +54,6 @@ public class InMemoryItemStorage implements ItemStorage {
                 .toList();
     }
 
-    @Override
     public void validateId(long id) {
         if (!items.containsKey(id)) {
             throw new NotFoundException("Нет предмета с id = " + id);

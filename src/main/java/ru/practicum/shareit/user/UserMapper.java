@@ -2,8 +2,6 @@ package ru.practicum.shareit.user;
 
 import ru.practicum.shareit.user.dto.UserDto;
 
-import java.util.HashSet;
-
 public class UserMapper {
     public static UserDto mapToUserDto(User user) {
         return new UserDto(
@@ -17,8 +15,7 @@ public class UserMapper {
         return new User(
                 userDto.getId(),
                 userDto.getName(),
-                userDto.getEmail(),
-                new HashSet<>()
+                userDto.getEmail()
         );
     }
 }
