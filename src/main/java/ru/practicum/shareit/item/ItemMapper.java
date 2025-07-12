@@ -3,6 +3,11 @@ package ru.practicum.shareit.item;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.RequestItemDto;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.model.RequestItem;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
@@ -15,7 +20,8 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.isAvailable(),
-                comments.stream().map(ItemMapper::mapToCommentDto).toList()
+                comments.stream().map(ItemMapper::mapToCommentDto).toList(),
+                item.getRequest() == null ? null : item.getRequest().getId()
         );
     }
 
@@ -32,13 +38,22 @@ public class ItemMapper {
         );
     }
 
-    public static Item mapToItem(ItemDto itemDto, User user) {
+    public static Item mapToItem(ItemDto itemDto, User user, ItemRequest request) {
         return new Item(
                 itemDto.getId(),
                 user,
                 itemDto.getName(),
                 itemDto.getDescription(),
-                itemDto.getAvailable()
+                itemDto.getAvailable(),
+                request
+        );
+    }
+
+    public static RequestItemDto mapToRequestItemDto(RequestItem item) {
+        return new RequestItemDto(
+                item.getId(),
+                item.getName(),
+                item.getUser().getId()
         );
     }
 

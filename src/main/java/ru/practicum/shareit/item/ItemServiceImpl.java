@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.InMemoryUserStorage;
 import ru.practicum.shareit.user.User;
 
@@ -41,7 +42,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
         User user = userStorage.getUser(userId);
-        Item item = itemStorage.createItem(ItemMapper.mapToItem(itemDto, user));
+        Item item = itemStorage.createItem(ItemMapper.mapToItem(itemDto, user, null));
 
         return ItemMapper.mapToItemDto(item, List.of());
     }

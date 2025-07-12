@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingDbService;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -16,6 +15,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.request.ItemRequestDbService;
 import ru.practicum.shareit.user.UserDbService;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase
-@Import({ItemDbService.class, UserDbService.class, BookingDbService.class})
+@Import({ItemDbService.class, UserDbService.class, BookingDbService.class, ItemRequestDbService.class})
 class ItemDbServiceTest {
     private final ItemService itemService;
     private final UserService userService;
@@ -35,9 +35,9 @@ class ItemDbServiceTest {
 
     private static final UserDto userDto1 = new UserDto(null, "user1", "a@mail");
     private static final UserDto userDto2 = new UserDto(null, "user2", "b@mail");
-    private static final ItemDto itemDto1 = new ItemDto(null, "item1", "some item", true, null);
-    private static final ItemDto itemDto2 = new ItemDto(null, "item2", "some item", true, null);
-    private static final ItemDto itemDto3 = new ItemDto(null, "item3", "some item", false, null);
+    private static final ItemDto itemDto1 = new ItemDto(null, "item1", "some item", true, null, null);
+    private static final ItemDto itemDto2 = new ItemDto(null, "item2", "some item", true, null, null);
+    private static final ItemDto itemDto3 = new ItemDto(null, "item3", "some item", false, null, null);
 
     @Autowired
     public ItemDbServiceTest(@Qualifier("itemDbService") ItemService itemService,

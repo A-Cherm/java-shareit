@@ -14,6 +14,10 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -31,15 +35,18 @@ public class ItemDbService implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final UserService userService;
+    private final ItemRequestService itemRequestService;
 
     @Autowired
     public ItemDbService(ItemRepository itemRepository, BookingRepository bookingRepository,
                          CommentRepository commentRepository,
-                         @Qualifier("userDbService") UserService userService) {
+                         @Qualifier("userDbService") UserService userService,
+                         ItemRequestService itemRequestService) {
         this.itemRepository = itemRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
         this.userService = userService;
+        this.itemRequestService = itemRequestService;
     }
 
     @Override
@@ -106,7 +113,11 @@ public class ItemDbService implements ItemService {
     @Transactional
     public ItemDto createItem(long userId, ItemDto itemDto) {
         User user = userService.validateUserId(userId);
-        Item item = itemRepository.save(ItemMapper.mapToItem(itemDto, user));
+        ItemRequest request = null;
+        if (itemDto.getRequestId() != null) {
+            request = itemRequestService.validateRequestId(itemDto.getRequestId());
+        }
+        Item item = itemRepository.save(ItemMapper.mapToItem(itemDto, user, request));
 
         return ItemMapper.mapToItemDto(item, List.of());
     }

@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
 import java.util.List;
@@ -13,9 +14,9 @@ class InMemoryItemStorageTest {
     private InMemoryItemStorage itemStorage;
     private static final User user1 = new User(1L, "user1", "a@mail");
     private static final User user2 = new User(2L, "user2", "b@mail");
-    private static final Item item1 = new Item(1L, user1,"item1", "some item", true);
-    private static final Item item2 = new Item(1L, user2,"item2", "some item", true);
-    private static final Item item3 = new Item(1L, user1,"item3", "some item", false);
+    private static final Item item1 = new Item(1L, user1, "item1", "some item", true, null);
+    private static final Item item2 = new Item(1L, user2, "item2", "some item", true, null);
+    private static final Item item3 = new Item(1L, user1, "item3", "some item", false, null);
 
     @BeforeEach
     public void newStorage() {
@@ -60,7 +61,7 @@ class InMemoryItemStorageTest {
     void testUpdateItem() {
         itemStorage.createItem(item1);
 
-        Item newItem = new Item(1L, user1, "new item", "new", false);
+        Item newItem = new Item(1L, user1, "new item", "new", false, null);
 
         itemStorage.updateItem(newItem);
 
