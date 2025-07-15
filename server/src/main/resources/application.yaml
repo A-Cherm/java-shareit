@@ -1,0 +1,19 @@
+server.port: 9090
+
+spring.jpa.hibernate.ddl-auto: none
+spring.jpa.properties.hibernate.format_sql: true
+spring.sql.init.mode: always
+
+logging.level.org.springframework:
+  orm:
+    jpa: INFO
+    jpa.JpaTransactionManager: DEBUG
+  transaction: INFO
+  transaction.interceptor: TRACE
+
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6542/shareit
+    username: shareit
+    password: shareit
