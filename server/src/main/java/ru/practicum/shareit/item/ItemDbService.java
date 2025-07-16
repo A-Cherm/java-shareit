@@ -150,9 +150,6 @@ public class ItemDbService implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(long userId, String searchQuery) {
-        if (searchQuery == null || searchQuery.isBlank()) {
-            return List.of();
-        }
         return itemRepository.searchAvailableItems(searchQuery)
                 .stream()
                 .map(item -> ItemMapper.mapToItemDto(item, List.of()))

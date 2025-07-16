@@ -7,9 +7,13 @@ import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestDbService;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.InMemoryUserStorage;
 import ru.practicum.shareit.user.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,6 +27,7 @@ class ItemServiceImplTest {
 
     private final InMemoryItemStorage itemStorage = Mockito.mock(InMemoryItemStorage.class);
     private final InMemoryUserStorage userStorage = Mockito.mock(InMemoryUserStorage.class);
+    private final ItemRequestService itemRequestService = Mockito.mock(ItemRequestDbService.class);
 
     private final User user1 = new User(1L, "user1", "a@mail");
     private final Item item1 = new Item(1L, user1, "item1", "some item", true, null);
@@ -32,7 +37,7 @@ class ItemServiceImplTest {
 
     @BeforeEach
     void newService() {
-        this.itemService = new ItemServiceImpl(itemStorage, userStorage);
+        this.itemService = new ItemServiceImpl(itemStorage, userStorage, itemRequestService);
     }
 
     @Test
@@ -75,6 +80,28 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void testCreateItemWithValidRequest() {
+        ItemDto itemDtoWithRequest = new ItemDto(1L, "item1", "some item", true, null, 1L);
+        ItemRequest itemRequest = new ItemRequest(1L, user1, "aaa", LocalDateTime.now());
+        Item itemWithRequest = new Item(1L, user1, "item1", "some item", true, itemRequest);
+
+        when(userStorage.getUser(anyLong()))
+                .thenReturn(user1);
+        when(itemStorage.createItem(any()))
+                .thenReturn(itemWithRequest);
+        when(itemRequestService.validateRequestId(anyLong()))
+                .thenReturn(itemRequest);
+
+        ItemDto itemDto = itemService.createItem(1L, itemDtoWithRequest);
+
+        assertThat(itemDto, notNullValue());
+        assertThat(itemDto.getName(), equalTo(itemDtoWithRequest.getName()));
+        assertThat(itemDto.getDescription(), equalTo(itemDtoWithRequest.getDescription()));
+        assertThat(itemDto.getAvailable(), equalTo(itemDtoWithRequest.getAvailable()));
+        assertThat(itemDto.getRequestId(), equalTo(itemDtoWithRequest.getRequestId()));
+    }
+
+    @Test
     void testUpdateItem() {
         when(itemStorage.getItem(anyLong()))
                 .thenReturn(item1);
@@ -91,20 +118,10 @@ class ItemServiceImplTest {
 
     @Test
     void testSearchItems() {
-        List<ItemDto> userItems = itemService.searchItems(1L, "");
-
-        assertThat(userItems, notNullValue());
-        assertThat(userItems.size(), equalTo(0));
-
-        userItems = itemService.searchItems(1L, null);
-
-        assertThat(userItems, notNullValue());
-        assertThat(userItems.size(), equalTo(0));
-
         when(itemStorage.searchItems(anyString()))
                 .thenReturn(List.of(item1, item2));
 
-        userItems = itemService.searchItems(1L, "asd");
+        List<ItemDto> userItems = itemService.searchItems(1L, "asd");
 
         assertThat(userItems, notNullValue());
         assertThat(userItems.size(), equalTo(2));

@@ -230,16 +230,6 @@ class ItemDbServiceTest {
 
         assertNotNull(search, "Список вещей не возвращается");
         assertEquals(0, search.size(), "Неверный размер списка");
-
-        search = itemService.searchItems(user1.getId(), "");
-
-        assertNotNull(search, "Список вещей не возвращается");
-        assertEquals(0, search.size(), "Неверный размер списка");
-
-        search = itemService.searchItems(user1.getId(), null);
-
-        assertNotNull(search, "Список вещей не возвращается");
-        assertEquals(0, search.size(), "Неверный размер списка");
     }
 
     @Test

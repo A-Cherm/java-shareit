@@ -24,8 +24,8 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAllRequests() {
-        List<ItemRequestDto> itemRequests = itemRequestService.getAllRequests();
+    public List<ItemRequestDto> getRequestsFromOtherUsers(@RequestHeader("X-Sharer-User-Id") long userId) {
+        List<ItemRequestDto> itemRequests = itemRequestService.getRequestsFromOtherUsers(userId);
 
         log.info("Список всех запросов: {}", itemRequests);
         return itemRequests;

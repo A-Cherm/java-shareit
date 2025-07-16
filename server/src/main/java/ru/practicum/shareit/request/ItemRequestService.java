@@ -7,7 +7,7 @@ import java.util.List;
 public interface ItemRequestService {
     List<ItemRequestDto> getUserRequests(long userId);
 
-    List<ItemRequestDto> getAllRequests();
+    List<ItemRequestDto> getRequestsFromOtherUsers(long userId);
 
     ItemRequestDto getRequest(long requestId);
 

@@ -3,12 +3,15 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+
+import java.util.List;
 
 @Controller
 @RequestMapping(path = "/items")
@@ -49,6 +52,9 @@ public class ItemController {
     public ResponseEntity<Object> searchItems(@RequestHeader("X-Sharer-User-Id") long userId,
                                      @RequestParam(name = "text") String searchQuery) {
         log.info("Поиск вещей по запросу {}", searchQuery);
+        if (searchQuery == null || searchQuery.isBlank()) {
+            return ResponseEntity.status(HttpStatus.OK).body(List.of());
+        }
         return itemClient.searchItems(userId, searchQuery);
     }
 

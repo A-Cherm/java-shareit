@@ -33,6 +33,7 @@ public class ItemRequestDbService implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getUserRequests(long userId) {
+        userService.validateUserId(userId);
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdOrderByCreatedDesc(userId);
         Set<Long> requestIds = itemRequests
                 .stream()
@@ -54,10 +55,10 @@ public class ItemRequestDbService implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAllRequests() {
-        return itemRequestRepository.findAllByOrderByCreatedDesc()
+    public List<ItemRequestDto> getRequestsFromOtherUsers(long userId) {
+        return itemRequestRepository.findAllByRequesterIdNotOrderByCreatedDesc(userId)
                 .stream()
-                .map(request -> ItemRequestMapper.mapToItemRequestDto(request, null))
+                .map(request -> ItemRequestMapper.mapToItemRequestDto(request, List.of()))
                 .toList();
     }
 
@@ -79,7 +80,7 @@ public class ItemRequestDbService implements ItemRequestService {
         ItemRequest itemRequest = ItemRequestMapper.mapToItemRequest(requestDto, user);
 
         itemRequest = itemRequestRepository.save(itemRequest);
-        return ItemRequestMapper.mapToItemRequestDto(itemRequest, null);
+        return ItemRequestMapper.mapToItemRequestDto(itemRequest, List.of());
     }
 
     @Override

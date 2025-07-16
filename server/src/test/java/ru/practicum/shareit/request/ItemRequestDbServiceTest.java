@@ -69,21 +69,28 @@ class ItemRequestDbServiceTest {
     }
 
     @Test
-    void testGetAllRequests() {
-        UserDto user = userService.createUser(userDto1);
+    void testGetRequestsFromOtherUsers() {
+        UserDto user1 = userService.createUser(userDto1);
+        UserDto user2 = userService.createUser(userDto2);
 
-        List<ItemRequestDto> requests = itemRequestService.getAllRequests();
-
-        assertThat(requests, notNullValue());
-
-        ItemRequestDto requestDto1 = itemRequestService.createRequest(user.getId(), itemRequestDto1);
-        ItemRequestDto requestDto2 = itemRequestService.createRequest(user.getId(), itemRequestDto2);
-
-        requests = itemRequestService.getAllRequests();
+        List<ItemRequestDto> requests = itemRequestService.getRequestsFromOtherUsers(user2.getId());
 
         assertThat(requests, notNullValue());
-        assertThat(requests.size(), equalTo(2));
-        assertThat(requests, hasItems(requestDto1, requestDto2));
+
+        ItemRequestDto requestDto1 = itemRequestService.createRequest(user1.getId(), itemRequestDto1);
+        ItemRequestDto requestDto2 = itemRequestService.createRequest(user2.getId(), itemRequestDto2);
+
+        requests = itemRequestService.getRequestsFromOtherUsers(user2.getId());
+
+        assertThat(requests, notNullValue());
+        assertThat(requests.size(), equalTo(1));
+        assertThat(requests, hasItem(requestDto1));
+
+        requests = itemRequestService.getRequestsFromOtherUsers(user1.getId());
+
+        assertThat(requests, notNullValue());
+        assertThat(requests.size(), equalTo(1));
+        assertThat(requests, hasItem(requestDto2));
     }
 
     @Test

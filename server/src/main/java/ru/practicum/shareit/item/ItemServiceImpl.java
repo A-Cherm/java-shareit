@@ -10,6 +10,8 @@ import ru.practicum.shareit.item.dto.ItemBookingsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.InMemoryUserStorage;
 import ru.practicum.shareit.user.User;
 
@@ -21,6 +23,7 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
     private final InMemoryItemStorage itemStorage;
     private final InMemoryUserStorage userStorage;
+    private final ItemRequestService itemRequestService;
 
     @Override
     public List<ItemBookingsDto> getUserItems(long userId) {
@@ -42,7 +45,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
         User user = userStorage.getUser(userId);
-        Item item = itemStorage.createItem(ItemMapper.mapToItem(itemDto, user, null));
+        ItemRequest request = null;
+        if (itemDto.getRequestId() != null) {
+            request = itemRequestService.validateRequestId(itemDto.getRequestId());
+        }
+        Item item = itemStorage.createItem(ItemMapper.mapToItem(itemDto, user, request));
 
         return ItemMapper.mapToItemDto(item, List.of());
     }
@@ -75,9 +82,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(long userId, String searchQuery) {
-        if (searchQuery == null || searchQuery.isBlank()) {
-            return List.of();
-        }
         List<Item> searchResult = itemStorage.searchItems(searchQuery);
 
         return searchResult

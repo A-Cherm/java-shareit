@@ -58,7 +58,7 @@ class ItemRequestControllerTest {
 
     @Test
     void testGetAllRequests() throws Exception {
-        when(itemRequestService.getAllRequests())
+        when(itemRequestService.getRequestsFromOtherUsers(anyLong()))
                 .thenReturn(List.of(itemRequestDto));
 
         mvc.perform(get("/requests/all")
