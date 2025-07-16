@@ -56,6 +56,7 @@ public class ItemRequestDbService implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getRequestsFromOtherUsers(long userId) {
+        userService.validateUserId(userId);
         return itemRequestRepository.findAllByRequesterIdNotOrderByCreatedDesc(userId)
                 .stream()
                 .map(request -> ItemRequestMapper.mapToItemRequestDto(request, List.of()))
