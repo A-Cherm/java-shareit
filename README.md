@@ -40,7 +40,7 @@
 ## Документация
 
 Подробное описание эндпойнтов доступно в OpenApi
-[документации](https://editor-next.swagger.io/?raw=https://github.com/A-Cherm/java-shareit/blob/main/gateway/openapi.yaml).
+[документации](https://editor-next.swagger.io/?url=https://raw.githubusercontent.com/A-Cherm/java-shareit/refs/heads/main/gateway/openapi.yaml).
 
 Краткое описание функций сервиса:
 
